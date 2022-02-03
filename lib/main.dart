@@ -15,6 +15,7 @@ class RFIDAttendanceSystem extends StatelessWidget {
     return MaterialApp(
       title: 'RFID Attendance System',
       theme: ThemeData(fontFamily: 'Montserrat'),
+      //debugShowCheckedModeBanner: false,
       routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const Login(),
