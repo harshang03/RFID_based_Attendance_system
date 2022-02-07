@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rfid_attendance_system/CustomWidgets/list_categories_for_pie_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class HomeScreenForStudent extends StatefulWidget {
   const HomeScreenForStudent({Key? key}) : super(key: key);
@@ -19,15 +20,21 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
   List<String> listOfSubjects = ["SEM", "INS", "CN", "LOL"];
   String? valueChoose;
 
-  void setData() {
+  Future<void> setData() async {
     a++;
     data = [
       PieChartSectionData(color: Colors.green, value: a),
       PieChartSectionData(color: Colors.red, value: 20, showTitle: false),
     ];
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+      }
+    } on SocketException catch (_) {
+      print('not connected');
+    }
   }
-
-  //var total_present;
 
   @override
   void initState() {
@@ -214,7 +221,6 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
                 Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.clear();
-                prefs.commit();
               }),
         ],
       ),
