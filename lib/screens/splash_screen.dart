@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dashboard_for_faculty.dart';
 import 'home_screen_for_student.dart';
 import 'login.dart';
 
@@ -15,7 +16,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late String temp;
+  late String temp,role;
 
   @override
   void initState() {
@@ -24,13 +25,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
     _getDataFromSharedPreference().whenComplete(() async {
       Timer(const Duration(seconds: 2), () {
-        if (temp == 'hg') {
+        if (temp != 'null') {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HomeScreenForStudent()));
+          switch (role) {
+            case 'student':
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const HomeScreenForStudent()));
+              break;
+            case 'faculty':
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const DashboardForFaculty()));
+              break;
+            case 'parent':
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return const HomeScreenForStudent();
+                },
+              ), (route) => false);
+              break;
+          }
         } else {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const Login()));
-          print('Login calling');
+          //print('Login calling');
         }
       });
     });
@@ -40,8 +58,10 @@ class _SplashScreenState extends State<SplashScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       temp = prefs.getString('uid').toString();
+      role = prefs.getString('role').toString();
+      print(temp);
     });
-    print('At splash screen time :' + temp);
+    //print('At splash screen time :' + temp);
   }
 
   @override

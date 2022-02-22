@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rfid_attendance_system/CustomWidgets/list_categories_for_pie_chart.dart';
+import 'package:rfid_attendance_system/DatabaseConnection/server_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class HomeScreenForStudent extends StatefulWidget {
   const HomeScreenForStudent({Key? key}) : super(key: key);
@@ -14,62 +16,58 @@ class HomeScreenForStudent extends StatefulWidget {
 }
 
 class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
-  String uID = '', uName = '', sID = '';
+  late String collegeId = '', uName = '', sID = '';
   double a = 5;
-  late List<PieChartSectionData> data;
-  List<String> listOfSubjects = ["SEM", "INS", "CN", "LOL"];
+  late List<PieChartSectionData> data = [];
+  List<dynamic> listOfSubjects = ["SEM", "INS", "CN", "LOL"];
   String? valueChoose;
 
-  Future<void> setData() async {
+  Future<void> setDataOfPieChart() async {
     a++;
     data = [
       PieChartSectionData(color: Colors.green, value: a),
       PieChartSectionData(color: Colors.red, value: 20, showTitle: false),
     ];
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('connected');
-      }
-    } on SocketException catch (_) {
-      print('not connected');
+  }
+
+  Future setData() async {
+    print(ServerUrl.dataFolderUrl +
+        "/get-student-attendance-data?college_id=" +
+        collegeId);
+    var response = await http.get(Uri.parse(ServerUrl.dataFolderUrl +
+        "get-student-attendance-data?college_id=" +
+        collegeId));
+    AttendanceDetails attendanceDetails =
+        AttendanceDetails.fromJson(jsonDecode(response.body));
+    print(jsonDecode(response.body));
+
+    for (var element in attendanceDetails.subDetails) {
+      listOfSubjects.add(element);
     }
+    print(listOfSubjects[5]);
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getDataFromSharedPreference();
-    setData();
+    _getDataFromSharedPreference().whenComplete(() {
+      setData();
+    });
+    setDataOfPieChart();
   }
 
   Future _getDataFromSharedPreference() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      uID = prefs.getString('uid').toString();
+      collegeId = prefs.getString('college_id').toString().toUpperCase();
+      uName = prefs.getString('firstName')!;
     });
     //_getDataFromServer();
   }
 
-  /*Future _getDataFromServer() async {
-    var response = await get(Uri.parse(
-        'https://3ee3-43-250-156-21.ngrok.io/RFID_Attendance_API_war_exploded/app/get-student-attendance-data?college_id=D20CE190'));
-    var jsonData = jsonDecode(response.body);
-    List<String> a = [];
-    for (var A in jsonData) {
-      String cou = A['total_present'];
-      a.add(cou);
-    }
-    print('data :' + a.first);
-  }*/
-
   @override
   Widget build(BuildContext context) {
-    var imageUrl =
-        'https://images.unsplash.com/photo-1642874078537-3054faddac7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80';
-    //var imageUrl =
-    'https://3ee3-43-250-156-21.ngrok.io/RFID_Attendance_API_war_exploded/images/user_profile/1.jpg';
     return Scaffold(
       //resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF21BFBD),
@@ -86,12 +84,12 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
                 Column(
                   children: <Widget>[
                     Text(
-                      'Harshang',
-                      style: TextStyle(fontSize: 35),
+                      uName,
+                      style: const TextStyle(fontSize: 35),
                     ),
                     Text(
-                      'D20CE189',
-                      style: TextStyle(fontSize: 20),
+                      collegeId,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ],
                 ),
@@ -110,7 +108,8 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
                   child: CircleAvatar(
                     child: ClipOval(
                       child: FadeInImage(
-                        image: NetworkImage(imageUrl),
+                        image: NetworkImage(
+                            ServerUrl.imageFolderUrl + "/user_profile/1.jpg"),
                         height: 120,
                         width: 120,
                         fit: BoxFit.cover,
@@ -169,7 +168,8 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
                             horizontal: 10, vertical: 0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF21BFBD), width: 2),
+                          border: Border.all(
+                              color: const Color(0xFF21BFBD), width: 2),
                         ),
                         child: DropdownButtonFormField(
                           hint: const Text('SEM'),
@@ -182,6 +182,7 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
                             return DropdownMenuItem(
                               child: Text(valueItem),
                               value: valueItem,
+                              onTap: () {},
                             );
                           }).toList(),
                           value: valueChoose,
@@ -216,7 +217,7 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
           SpeedDialChild(
               child: const Icon(Icons.logout),
               label: "Log out",
-              onTap: ()async{
+              onTap: () async {
                 print('Logout taped');
                 Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
                 SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -225,5 +226,57 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
         ],
       ),
     );
+  }
+}
+
+class AttendanceDetails {
+  int totalPresent;
+  int subjectCount;
+  int totalLectures;
+  int totalPercent;
+  List<SubjectAttendanceDetails> subDetails;
+
+  AttendanceDetails(
+      {required this.totalPresent,
+      required this.subjectCount,
+      required this.totalLectures,
+      required this.totalPercent,
+      required this.subDetails});
+
+  factory AttendanceDetails.fromJson(Map<String, dynamic> json) {
+    var list = json['subjects'] as List;
+    List<SubjectAttendanceDetails> subjectDetails = list
+        .map((subDetails) => SubjectAttendanceDetails.fromJson(subDetails))
+        .toList();
+    return AttendanceDetails(
+        totalPresent: json['total_present'],
+        subjectCount: json['subject_count'],
+        totalLectures: json['total_lectures'],
+        totalPercent: json['total_percent'],
+        subDetails: subjectDetails);
+  }
+}
+
+class SubjectAttendanceDetails {
+  int total;
+  String code;
+  String name;
+  int presentCount;
+  double presentPercent;
+
+  SubjectAttendanceDetails(
+      {required this.total,
+      required this.code,
+      required this.name,
+      required this.presentCount,
+      required this.presentPercent});
+
+  factory SubjectAttendanceDetails.fromJson(Map<String, dynamic> json) {
+    return SubjectAttendanceDetails(
+        total: json['total'],
+        code: json['code'],
+        name: json['name'],
+        presentCount: json['present'],
+        presentPercent: json['percent']);
   }
 }
