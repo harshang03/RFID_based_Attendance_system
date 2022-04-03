@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rfid_attendance_system/CustomPageRoutes/left_to_right_transaction.dart';
 import 'package:rfid_attendance_system/CustomPageRoutes/right_to_left_transaction.dart';
-import 'package:rfid_attendance_system/screens/mark_attendance.dart';
-import 'package:rfid_attendance_system/screens/select_student_for_view_attendance.dart';
+import 'package:rfid_attendance_system/screens/faculty/mark_attendance.dart';
+import 'package:rfid_attendance_system/screens/faculty/select_student_for_view_attendance.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../DatabaseConnection/server_url.dart';
 
 class DashboardForFaculty extends StatefulWidget {
   const DashboardForFaculty({Key? key}) : super(key: key);
@@ -15,10 +17,30 @@ class DashboardForFaculty extends StatefulWidget {
 }
 
 class _DashboardForFacultyState extends State<DashboardForFaculty> {
+  late String collegeId = '', uName = '', fID = '';
+
+  Future _getDataFromSharedPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      collegeId = prefs.getString('college_id').toString().toUpperCase();
+      uName = prefs.getString('firstName')!;
+      fID = prefs.getString('uid')!;
+      if (uName.length > 8) {
+        uName = uName.substring(0, 8) + "...";
+      }
+    });
+    //_getDataFromServer();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getDataFromSharedPreference();
+  }
+
   @override
   Widget build(BuildContext context) {
-    var imageUrl =
-        'https://images.unsplash.com/photo-1642874078537-3054faddac7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80';
     return Scaffold(
       //resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF21BFBD),
@@ -35,12 +57,12 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
                 Column(
                   children: <Widget>[
                     Text(
-                      'Harshang',
-                      style: TextStyle(fontSize: 35),
+                      uName,
+                      style: const TextStyle(fontSize: 35),
                     ),
                     Text(
-                      'D20CE189',
-                      style: TextStyle(fontSize: 20),
+                      'ID: ' + collegeId,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ],
                 ),
@@ -59,7 +81,10 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
                   child: CircleAvatar(
                     child: ClipOval(
                       child: FadeInImage(
-                        image: NetworkImage(imageUrl),
+                        image: NetworkImage(ServerUrl.imageFolderUrl +
+                            "/user_profile/" +
+                            fID +
+                            ".jpg"),
                         height: 120,
                         width: 120,
                         fit: BoxFit.cover,
@@ -113,8 +138,9 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
                                 borderRadius: BorderRadius.circular(10),
                                 splashColor: const Color(0xFFCCFFFB),
                                 onTap: () {
-                                  Navigator.of(context).push(RTOLCustomPageRoute(child: const SelectStudent()));
-                                  print("taped");
+                                  Navigator.of(context).push(
+                                      RTOLCustomPageRoute(
+                                          child: const SelectStudent()));
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(30),
@@ -148,7 +174,7 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
                                 ),
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 50,
                             ),
                             Card(
@@ -160,7 +186,6 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
                                 borderRadius: BorderRadius.circular(10),
                                 splashColor: const Color(0xFFCCFFFB),
                                 onTap: () {
-                                  print("taped");
                                   Navigator.of(context).push(
                                       LTORCustomPageRoute(
                                           child: const MarkAttendance()));
@@ -226,7 +251,6 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
               child: const Icon(Icons.logout),
               label: "Log out",
               onTap: () async {
-                print('Logout taped');
                 Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.clear();

@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rfid_attendance_system/DatabaseConnection/server_url.dart';
-import 'package:rfid_attendance_system/screens/dashboard_for_faculty.dart';
+import 'package:rfid_attendance_system/screens/faculty/dashboard_for_faculty.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_screen_for_student.dart';
+import 'student/home_screen_for_student.dart';
 import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
@@ -18,63 +20,81 @@ class _LoginState extends State<Login> {
   TextEditingController nameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  String encrypt(String data, String salt) {
+    String pepper = "7w!z%C*F";
+    var bytes = utf8.encode(data + salt + pepper);
+    var digest = sha512.convert(bytes).toString();
+    return digest;
+  }
+
   void login() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(ServerUrl.dataFolderUrl +
-        "/login?email=" +
-        nameController.text +
-        "&password=0ed39192e3d05ef336070fbc05915dce3e9653ed32371f2a3de3a48da126eb7502ed2bfc252d91c45a753e88bf01aa842243be9f2d38e5ba0ca5512382cb1808");
-    var response = await http.get(Uri.parse(ServerUrl.dataFolderUrl +
-        "/login?email=" +
-        nameController.text +
-        "&password=0ed39192e3d05ef336070fbc05915dce3e9653ed32371f2a3de3a48da126eb7502ed2bfc252d91c45a753e88bf01aa842243be9f2d38e5ba0ca5512382cb1808"));
 
-    var data = jsonDecode(response.body);
-    if (nameController.text.isNotEmpty /*&& passwordController.text.isNotEmpty*/) {
-      if (data['result'] == 0) {
-        prefs.setString('uid', data['uid'].toString());
-        prefs.setString('college_id', data['college_id'].toString());
-        prefs.setString('firstName', data['first_name']);
-        prefs.setString('role', data['role']);
-        /*prefs.setString('middleName', data['middle_name'].toString());
+    var response1 = await http.get(Uri.parse(ServerUrl.dataFolderUrl +
+        '/get-user-hash?username=' +
+        nameController.text));
+    var data1 = jsonDecode(response1.body);
+
+    if (data1['result'] == 0) {
+      var response = await http.get(Uri.parse(ServerUrl.dataFolderUrl +
+          "/login?email=" +
+          nameController.text +
+          "&password=" +
+          encrypt(passwordController.text, data1['salt'])));
+      print(ServerUrl.dataFolderUrl +
+          "/login?email=" +
+          nameController.text +
+          "&password=" +
+          encrypt(passwordController.text, data1['salt']));
+
+      var data = jsonDecode(response.body);
+      if (nameController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty) {
+        if (data['result'] == 0) {
+          prefs.setString('uid', data['uid'].toString());
+          prefs.setString('college_id', data['college_id'].toString());
+          prefs.setString('firstName', data['first_name']);
+          prefs.setString('role', data['role']);
+          /*prefs.setString('middleName', data['middle_name'].toString());
         prefs.setString('lastName', data['last_name'].toString());*/
-        switch (data['role']) {
-          case 'student':
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-              builder: (BuildContext context) {
-                return const HomeScreenForStudent();
-              },
-            ), (route) => false);
-            break;
-          case 'faculty':
-            prefs.setString('uid', nameController.text);
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-              builder: (BuildContext context) {
-                return const DashboardForFaculty();
-              },
-            ), (route) => false);
-            break;
-          case 'parent':
-            prefs.setString('uid', nameController.text);
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-              builder: (BuildContext context) {
-                return const HomeScreenForStudent();
-              },
-            ), (route) => false);
-            break;
+          switch (data['role']) {
+            case 'student':
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return const HomeScreenForStudent();
+                },
+              ), (route) => false);
+              break;
+            case 'faculty':
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return const DashboardForFaculty();
+                },
+              ), (route) => false);
+              break;
+            case 'parent':
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return const HomeScreenForStudent();
+                },
+              ), (route) => false);
+              break;
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('User name or password is incorrect!'),
+          ));
         }
-      }else{
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('User name or password is incorrect!'),
+          content: Text('Enter User name or password.'),
         ));
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Enter User name or password.'),
+        content: Text('Enter valid User name or password.'),
       ));
     }
-    print('Uname: ' + nameController.text);
-    print('pass: ' + passwordController.text);
   }
 
   @override

@@ -1,7 +1,8 @@
 class ServerUrl {
-  static String serverUrl = "http://192.168.197.71:8080";
+  static String serverUrl = "http://192.168.0.105:5349";
+  //static String serverUrl = "http://192.168.181.71:5349";
   static String dataFolderUrl =
-      serverUrl + "/RFID_Attendance_API_war_exploded/app";
+      serverUrl + "/RFIDAttendanceAPI/app";
   static String imageFolderUrl =
-      serverUrl + "/RFID_Attendance_API_war_exploded/images";
+      serverUrl + "/RFIDAttendanceAPI/images";
 }
