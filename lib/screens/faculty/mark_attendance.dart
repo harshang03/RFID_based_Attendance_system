@@ -17,7 +17,7 @@ class MarkAttendance extends StatefulWidget {
 
 class _MarkAttendanceState extends State<MarkAttendance> {
   var _isChanged = [];
-  Map<String,bool> val = [] as Map<String, bool>;
+  Map<String, bool> val = {};
 
   @override
   void initState() {
@@ -70,12 +70,13 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
       if (element.presence == "true") {
         _isChanged.add(true);
-        val.addAll({element.collegeId:true});
+        val.addAll({element.collegeId: true});
       } else {
         _isChanged.add(false);
       }
+      print(val);
     }
-    print(val);
+
     return students;
   }
 
@@ -93,12 +94,12 @@ class _MarkAttendanceState extends State<MarkAttendance> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 Text(
-                  "Find A Student",
+                  "Select A Student",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            Padding(
+            /*Padding(
               padding: const EdgeInsets.all(10),
               child: Card(
                 elevation: 5,
@@ -116,7 +117,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                   ),
                 ),
               ),
-            ),
+            ),*/
             const SizedBox(
               height: 30,
             ),

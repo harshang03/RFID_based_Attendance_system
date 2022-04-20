@@ -23,19 +23,40 @@ class _SelectStudentState extends State<SelectStudent> {
     prefs.setString("fromFacultyStudentUid", uid);
   }
 
+  List<dynamic> students = [];
+  List<dynamic> studentsForSearch = [];
+
   Future<dynamic> getStudents() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var response = await http.get(Uri.parse(ServerUrl.dataFolderUrl +
         '/init-faculty-view-attendance?college_id=' +
         prefs.getString('college_id').toString()));
 
+    print(ServerUrl.dataFolderUrl +
+        '/init-faculty-view-attendance?college_id=' +
+        prefs.getString('college_id').toString());
+
     InitFacultyViewAttendance initFacultyViewAttendance =
         InitFacultyViewAttendance.fromJson(jsonDecode(response.body));
-    List<dynamic> students = [];
     for (var element in initFacultyViewAttendance.studentDetails) {
       students.add(element);
     }
-    return students;
+    studentsForSearch = students;
+    return studentsForSearch;
+  }
+
+  void searchFromList(String text) {
+    final sug;
+    if(text.isEmpty){
+      sug = students;
+    }else{
+      sug = studentsForSearch.where((element) {
+        return element.collegeId.contains(text.toUpperCase());
+      }).toList();
+    }
+    setState(() {
+      studentsForSearch = sug;
+    });
   }
 
   @override
@@ -59,13 +80,13 @@ class _SelectStudentState extends State<SelectStudent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
                     Text(
-                      "Find A Student",
+                      "Select A Student",
                       style:
                           TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                Padding(
+                /*Padding(
                   padding: const EdgeInsets.all(10),
                   child: Card(
                     elevation: 5,
@@ -74,7 +95,8 @@ class _SelectStudentState extends State<SelectStudent> {
                     child: TextFormField(
                       onChanged: (text) {
                         text = text.toUpperCase();
-                        setState(() {});
+                        print(text);
+                        searchFromList(text);
                       },
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -83,7 +105,7 @@ class _SelectStudentState extends State<SelectStudent> {
                       ),
                     ),
                   ),
-                ),
+                ),*/
                 const SizedBox(
                   height: 40,
                 ),

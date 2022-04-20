@@ -330,7 +330,7 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
         overlayOpacity: 0.5,
         overlayColor: Colors.black,
         children: [
-          SpeedDialChild(
+          /*SpeedDialChild(
               child: const Icon(Icons.account_circle_rounded),
               label: "Profile",
               onTap: () => {
@@ -341,7 +341,7 @@ class _HomeScreenForStudentState extends State<HomeScreenForStudent> {
               label: "Settings",
               onTap: () => {
                     /*print('Settings taped')*/
-                  }),
+                  }),*/
           SpeedDialChild(
               child: const Icon(Icons.logout),
               label: "Log out",

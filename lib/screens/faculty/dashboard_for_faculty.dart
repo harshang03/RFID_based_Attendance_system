@@ -239,14 +239,14 @@ class _DashboardForFacultyState extends State<DashboardForFaculty> {
         overlayOpacity: 0.5,
         overlayColor: Colors.black,
         children: [
-          SpeedDialChild(
+          /*SpeedDialChild(
               child: const Icon(Icons.account_circle_rounded),
               label: "Profile",
               onTap: () => {print('profile taped')}),
           SpeedDialChild(
               child: const Icon(Icons.settings),
               label: "Settings",
-              onTap: () => {print('Settings taped')}),
+              onTap: () => {print('Settings taped')}),*/
           SpeedDialChild(
               child: const Icon(Icons.logout),
               label: "Log out",

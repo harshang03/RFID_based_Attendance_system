@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:rfid_attendance_system/DatabaseConnection/server_url.dart';
 import 'package:rfid_attendance_system/screens/faculty/dashboard_for_faculty.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,7 +86,7 @@ class _LoginState extends State<Login> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Enter User name or password.'),
+          content: Text('Please enter User name or password first.'),
         ));
       }
     } else {
